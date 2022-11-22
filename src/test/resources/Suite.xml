@@ -1,0 +1,15 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+
+<suite name="Test suite API">
+    <listeners>
+        <listener class-name="org.bankTransaction.utils.listener.Listener"/>
+    </listeners>
+
+    <parameter name="endpoint" value="https://637bbb6b6f4024eac217041a.mockapi.io/users"/>
+
+    <test name="API tests">
+        <classes>
+            <class name="org.bankTransaction.tests.EmptyEndpointTest"/>
+        </classes>
+    </test>
+</suite>
