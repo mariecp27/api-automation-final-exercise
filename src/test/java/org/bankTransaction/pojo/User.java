@@ -20,8 +20,7 @@ public class User {
 
     }
 
-    public User(int id, String name, String lastName, int accountNumber, float amount, String transactionType, String email, boolean active, String country, String telephone) {
-        this.id = id;
+    public User(String name, String lastName, int accountNumber, float amount, String transactionType, String email, boolean active, String country, String telephone) {
         this.name = name;
         this.lastName = lastName;
         this.accountNumber = accountNumber;
@@ -114,6 +113,16 @@ public class User {
                 .contentType("application/json")
                 .when()
                 .delete(endpoint + "/" + this.getId());
+
+        return response.getStatusCode();
+    }
+
+    public int createUser(String endpoint, User user) {
+        Response response = given()
+                .header("Content-Type", "application/json")
+                .body(user)
+                .when()
+                .post(endpoint);
 
         return response.getStatusCode();
     }

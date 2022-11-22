@@ -7,9 +7,14 @@
 
     <parameter name="endpoint" value="https://637bbb6b6f4024eac217041a.mockapi.io/users"/>
 
-    <test name="API tests">
+    <test name="Empty endpoint test" enabled="true">
         <classes>
             <class name="org.bankTransaction.tests.EmptyEndpointTest"/>
+        </classes>
+    </test>
+    <test name="Initialize pojo test" enabled="true">
+        <classes>
+            <class name="org.bankTransaction.tests.InitializePojoTest"/>
         </classes>
     </test>
 </suite>
