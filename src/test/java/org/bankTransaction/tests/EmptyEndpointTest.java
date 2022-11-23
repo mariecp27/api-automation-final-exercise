@@ -13,7 +13,7 @@ public class EmptyEndpointTest extends BaseTest {
     @Test
     public void emptyEndpointTest(String endpoint) {
         Reporter.info("Starting 'Empty endpoint test'");
-        checkThat("Users were successfully deleted if any", deleteAllUsers(endpoint), is(true));
         checkThat("Endpoint is empty", getAllUsers(endpoint).size(), is(0));
+        checkThat("Users were successfully deleted if any", deleteAllUsers(endpoint), is(true));
     }
 }

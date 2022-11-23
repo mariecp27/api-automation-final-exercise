@@ -7,12 +7,12 @@ import org.testng.annotations.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 
-public class VerifyDuplicatesTest extends BaseTest {
+public class UpdateUserTest extends BaseTest {
 
     @Parameters({"endpoint"})
     @Test
     public void verifyDuplicatesTest(String endpoint) {
-        Reporter.info("Starting 'Verify duplicates test'");
-        checkThat("There are not duplicate emails", verifyDuplicates(endpoint), is(true));
+        Reporter.info("Starting 'Update user test'");
+        checkThat("User has been successfully updated", updateUser(endpoint, 1), is(200));
     }
 }

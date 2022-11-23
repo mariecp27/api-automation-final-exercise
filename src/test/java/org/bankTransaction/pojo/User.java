@@ -1,15 +1,11 @@
 package org.bankTransaction.pojo;
 
-import io.restassured.response.Response;
-
-import static io.restassured.RestAssured.given;
-
 public class User {
     private int id;
     private String name;
     private String lastName;
     private int accountNumber;
-    private float amount;
+    private double amount;
     private String transactionType;
     private String email;
     private boolean active;
@@ -20,7 +16,7 @@ public class User {
 
     }
 
-    public User(String name, String lastName, int accountNumber, float amount, String transactionType, String email, boolean active, String country, String telephone) {
+    public User(String name, String lastName, int accountNumber, double amount, String transactionType, String email, boolean active, String country, String telephone) {
         this.name = name;
         this.lastName = lastName;
         this.accountNumber = accountNumber;
@@ -33,43 +29,43 @@ public class User {
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getLastName() {
-        return lastName;
+        return this.lastName;
     }
 
     public int getAccountNumber() {
-        return accountNumber;
+        return this.accountNumber;
     }
 
-    public float getAmount() {
-        return amount;
+    public double getAmount() {
+        return this.amount;
     }
 
     public String getTransactionType() {
-        return transactionType;
+        return this.transactionType;
     }
 
     public String getEmail() {
-        return email;
+        return this.email;
     }
 
     public boolean isActive() {
-        return active;
+        return this.active;
     }
 
     public String getCountry() {
-        return country;
+        return this.country;
     }
 
     public String getTelephone() {
-        return telephone;
+        return this.telephone;
     }
 
     public void setName(String name) {
@@ -84,7 +80,7 @@ public class User {
         this.accountNumber = accountNumber;
     }
 
-    public void setAmount(float amount) {
+    public void setAmount(double amount) {
         this.amount = amount;
     }
 
@@ -106,24 +102,5 @@ public class User {
 
     public void setTelephone(String telephone) {
         this.telephone = telephone;
-    }
-
-    public int deleteUser(String endpoint) {
-        Response response = given()
-                .contentType("application/json")
-                .when()
-                .delete(endpoint + "/" + this.getId());
-
-        return response.getStatusCode();
-    }
-
-    public int createUser(String endpoint, User user) {
-        Response response = given()
-                .header("Content-Type", "application/json")
-                .body(user)
-                .when()
-                .post(endpoint);
-
-        return response.getStatusCode();
     }
 }

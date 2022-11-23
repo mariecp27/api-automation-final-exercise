@@ -22,4 +22,9 @@
             <class name="org.bankTransaction.tests.VerifyDuplicatesTest"/>
         </classes>
     </test>
+    <test name="Update user test" enabled="true">
+        <classes>
+            <class name="org.bankTransaction.tests.UpdateUserTest"/>
+        </classes>
+    </test>
 </suite>

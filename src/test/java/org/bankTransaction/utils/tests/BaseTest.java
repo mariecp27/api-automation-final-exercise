@@ -1,5 +1,6 @@
 package org.bankTransaction.utils.tests;
 
+import com.github.javafaker.Faker;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -9,10 +10,7 @@ import org.bankTransaction.reporting.Reporter;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static io.restassured.RestAssured.given;
 import static java.lang.String.format;
@@ -39,18 +37,17 @@ public class BaseTest {
 
     public boolean deleteAllUsers(String endpoint) {
         List<Boolean> deletedUserStatus = new ArrayList<>();
-        //List<Integer> status = new ArrayList<>();
-        if (this.getAllUsers(endpoint).size() > 0) {
-            this.getAllUsers(endpoint).stream().forEach(user -> {
-                //status.add(user.deleteUser(endpoint));
-                deletedUserStatus.add(user.deleteUser(endpoint) == 200);
-            });
+        List<Integer> status = new ArrayList<>();
+        List<User> users = getAllUsers(endpoint);
+        if (users.size() > 0) {
+            for (int i = 0; i < users.size(); i++) {
+                status.add(deleteUser(endpoint, users.get(i)));
+                deletedUserStatus.add(status.get(i) == 200);
+                if (status.get(i) != 200) {
+                    Reporter.error("Cannot delete user with id " + users.get(i).getId() + " - Http Response Code: " + status.get(i));
+                }
+            }
         }
-        /*
-        status.stream().forEach(statu -> {
-            System.out.println(statu);
-        });
-         */
         return !deletedUserStatus.contains(false);
     }
 
@@ -58,40 +55,46 @@ public class BaseTest {
         List<User> users = new ArrayList<>();
         List<Boolean> createdUserStatus = new ArrayList<>();
 
-        users.add(new User("Oma","Heaney", 34653034, 100000, "withdrawal", getRandomEmail(users), true, "Guyana", "1-220-311-1020"));
-        users.add(new User("Carolyne", "Kshlerin", 72825362, 150000, "deposit", getRandomEmail(users), true, "Malvinas", "562-835-3019"));
-        users.add(new User("Columbus", "Rath", 94460438, 400000, "payment", getRandomEmail(users), true, "Cyprus", "645-970-8574"));
-        users.add(new User("Keenan", "Vandervort", 20618260, 50000, "deposit", getRandomEmail(users), false, "Greece", "1-430-492-3278"));
-        users.add(new User("Kaitlin", "Crona", 75757, 600000, "withdrawal", getRandomEmail(users), true, "Saint Vincent and the Grenadines", "1-817-421-0452"));
-        users.add(new User("Ardith", "Runte", 3283764, 350000, "payment", getRandomEmail(users), true, "Greenland", "614-557-0937"));
-        users.add(new User("Linnea", "Bartoletti", 38686193, 750000, "withdrawal", getRandomEmail(users), true, "Moldova", "893-277-7155"));
-        users.add(new User("Noemy", "Borer", 71636841, 700000, "payment", getRandomEmail(users), false, "Malta", "993-276-7155"));
-        users.add(new User("Meta", "Gutkowski", 21651829, 550000, "payment", getRandomEmail(users), true, "Angola", "1-205-912-6884"));
-        users.add(new User("Chase", "Schoen", 71606385, 200000, "withdrawal", getRandomEmail(users), true, "French", "323-572-2440"));
+        Faker javaFaker = Faker.instance(new Locale("en-US"));
 
-        users.stream().forEach(user -> {
-            createdUserStatus.add(user.createUser(endpoint, user) != 200);
-        });
+        for (int i = 0; i < 10; i++) {
+            users.add(new User(
+                    javaFaker.name().firstName(),
+                    javaFaker.name().lastName(),
+                    javaFaker.number().numberBetween(0,10000),
+                    javaFaker.number().numberBetween(100000, 100000000),
+                    getTransaction(),
+                    javaFaker.internet().emailAddress(),
+                    javaFaker.random().nextBoolean(),
+                    javaFaker.country().name(),
+                    javaFaker.phoneNumber().cellPhone()
+                    ));
+        }
+
+        String duplicateEmail = javaFaker.internet().emailAddress();
+
+        users.get(3).setEmail(duplicateEmail);
+        users.get(8).setEmail(duplicateEmail);
+
+        for (int i = 0; i < users.size(); i++) {
+            boolean existingEmail = false;
+            for (int j = 0; j < users.size() && !existingEmail; j++) {
+                if (users.get(i).getEmail().equals(users.get(j).getEmail()) && i < j) {
+                    existingEmail = true;
+                }
+            }
+            if (!existingEmail) {
+                createdUserStatus.add(createUser(endpoint, users.get(i)) != 200);
+            }
+        }
 
         return !createdUserStatus.contains(false);
     }
 
-    public String getRandomEmail(List<User> users) {
-       boolean isUser = false;
-        String email = "";
-       do {
-           email = "email" + getRandomNumber() + "@email.com";
-           for (int i = 0; i < users.size(); i++) {
-               if (users.get(i).getEmail().equals(email)) {
-                   isUser = true;
-               }
-           }
-       } while (isUser);
-       return email;
-    }
-
-    public int getRandomNumber() {
-        return (int)(Math.random() * 1000);
+    public String getTransaction() {
+        List<String> transactions = Arrays.asList("withdrawal", "deposit", "payment", "invoice");
+        Random random = new Random();
+        return transactions.get(random.nextInt(transactions.size()));
     }
 
     public boolean verifyDuplicates(String endpoint) {
@@ -101,10 +104,53 @@ public class BaseTest {
         });
 
         Set<String> userSet = new HashSet<>(userEmails);
-        userSet.stream().forEach(user -> {
-            System.out.println(user);
-        });
+
         return userSet.size() == getAllUsers(endpoint).size();
+    }
+
+    public int updateUser(String endpoint, int userId) {
+        User user = getAllUsers(endpoint).get(userId - 1);
+
+        user.setName("Rhiannon");
+        user.setLastName("Weber");
+        user.setAccountNumber(55181079);
+        user.setAmount(850000);
+        user.setTransactionType("deposit");
+        user.setEmail("mathew_Ferry68@yahoo.com");
+        user.setActive(true);
+        user.setCountry("Cyprus");
+        user.setTelephone("1-872-825-1820");
+
+        return updateUser(endpoint,user);
+    }
+
+    public int deleteUser(String endpoint, User user) {
+        Response response = given()
+                .contentType("application/json")
+                .when()
+                .delete(endpoint + "/" + user.getId());
+
+        return response.getStatusCode();
+    }
+
+    public int createUser(String endpoint, User user) {
+        Response response = given()
+                .contentType("application/json")
+                .body(user)
+                .when()
+                .post(endpoint);
+
+        return response.getStatusCode();
+    }
+
+    public int updateUser(String endpoint, User user) {
+        Response response = given()
+                .contentType("application/json")
+                .body(user)
+                .when()
+                .put(endpoint + "/" + user.getId());
+
+        return response.getStatusCode();
     }
 
     /**
