@@ -7,12 +7,11 @@ import org.testng.annotations.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 
-public class InitializePojoTest extends BaseTest {
-
+public class VerifyDuplicatesTest extends BaseTest {
     @Parameters({"endpoint"})
     @Test
-    public void initializePojoTest(String endpoint) {
-        Reporter.info("Starting 'Initialize POJO test'");
-        checkThat("Users were correctly created", createUsers(endpoint), is(true));
+    public void verifyDuplicatesTest(String endpoint) {
+        Reporter.info("Starting 'Verify duplicates test'");
+        checkThat("There are not duplicate emails", verifyDuplicates(endpoint), is(true));
     }
 }

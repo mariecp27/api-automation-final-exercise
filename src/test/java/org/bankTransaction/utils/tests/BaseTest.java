@@ -10,7 +10,9 @@ import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static java.lang.String.format;
@@ -37,14 +39,18 @@ public class BaseTest {
 
     public boolean deleteAllUsers(String endpoint) {
         List<Boolean> deletedUserStatus = new ArrayList<>();
+        //List<Integer> status = new ArrayList<>();
         if (this.getAllUsers(endpoint).size() > 0) {
             this.getAllUsers(endpoint).stream().forEach(user -> {
-                deletedUserStatus.add(user.deleteUser(endpoint) != 200);
-                //System.out.println(user.deleteUser(endpoint));
-                //System.out.println(user.getId());
-                //System.out.println(endpoint + "/" + user.getId());
+                //status.add(user.deleteUser(endpoint));
+                deletedUserStatus.add(user.deleteUser(endpoint) == 200);
             });
         }
+        /*
+        status.stream().forEach(statu -> {
+            System.out.println(statu);
+        });
+         */
         return !deletedUserStatus.contains(false);
     }
 
@@ -86,6 +92,19 @@ public class BaseTest {
 
     public int getRandomNumber() {
         return (int)(Math.random() * 1000);
+    }
+
+    public boolean verifyDuplicates(String endpoint) {
+        List<String> userEmails = new ArrayList<>();
+        getAllUsers(endpoint).forEach(user -> {
+            userEmails.add(user.getEmail());
+        });
+
+        Set<String> userSet = new HashSet<>(userEmails);
+        userSet.stream().forEach(user -> {
+            System.out.println(user);
+        });
+        return userSet.size() == getAllUsers(endpoint).size();
     }
 
     /**

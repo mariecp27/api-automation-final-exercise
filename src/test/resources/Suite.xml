@@ -17,4 +17,9 @@
             <class name="org.bankTransaction.tests.InitializePojoTest"/>
         </classes>
     </test>
+    <test name="Verify duplicate test" enabled="true">
+        <classes>
+            <class name="org.bankTransaction.tests.VerifyDuplicatesTest"/>
+        </classes>
+    </test>
 </suite>
