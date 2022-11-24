@@ -18,6 +18,9 @@ public class EmptyEndpointTest extends BaseTest {
     @Parameters({"endpoint"})
     @Test
     public void emptyEndpointTest(String endpoint) {
+        Reporter.info("Verifying the users were properly obtained from the endpoint");
+        Assert.assertEquals(getAllUsersStatus(endpoint), 200, "Users were not obtained from endpoint");
+
         Reporter.info("Verifying the endpoint is empty");
         Reporter.info("Records amount in the endpoint: " + getAllUsers(endpoint).size());
 

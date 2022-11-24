@@ -18,6 +18,9 @@ public class VerifyDuplicatesTest extends BaseTest {
     @Parameters({"endpoint"})
     @Test
     public void verifyDuplicatesTest(String endpoint) {
+        Reporter.info("Verifying the users were properly obtained from the endpoint");
+        Assert.assertEquals(getAllUsersStatus(endpoint), 200, "Users were not obtained from endpoint");
+
         Reporter.info("Verifying there are no duplicate emails in the endpoint");
         Assert.assertTrue(verifyDuplicates(endpoint), "There are duplicate emails");
     }

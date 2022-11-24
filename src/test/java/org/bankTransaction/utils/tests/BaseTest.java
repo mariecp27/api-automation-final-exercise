@@ -17,6 +17,8 @@ import static io.restassured.RestAssured.given;
  */
 public class BaseTest {
 
+    protected int getUsersStatus;
+
     /**
      * Allows to get all users in the given endpoint and list them as objects from the class {@link org.bankTransaction.pojo.User}.
      * @param endpoint String
@@ -37,7 +39,14 @@ public class BaseTest {
             Reporter.error(String.valueOf(e));
         }
 
+        getUsersStatus = response.getStatusCode();
+
         return allUsers;
+    }
+
+    protected int getAllUsersStatus(String endpoint) {
+        getAllUsers(endpoint);
+        return getUsersStatus;
     }
 
     /**
