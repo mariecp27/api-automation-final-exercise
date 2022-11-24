@@ -11,7 +11,7 @@ import org.testng.annotations.Test;
  */
 public class InitializePojoTest extends BaseTest {
 
-    private int usersToBeCreated = 10;
+    private int usersToBeCreated = 11;
 
     /**
      * Allows to add {@link org.bankTransaction.pojo.User} to the endpoint and verify the resulted Http Response Code.
