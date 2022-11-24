@@ -7,17 +7,22 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.bankTransaction.pojo.User;
 import org.bankTransaction.reporting.Reporter;
-import org.hamcrest.Matcher;
-import org.hamcrest.MatcherAssert;
 
 import java.util.*;
 
 import static io.restassured.RestAssured.given;
-import static java.lang.String.format;
 
+/**
+ * Base class for Test classes.
+ */
 public class BaseTest {
 
-    public List<User> getAllUsers(String endpoint) {
+    /**
+     * Allows to get all users in the given endpoint and list them as objects from the class {@link org.bankTransaction.pojo.User}.
+     * @param endpoint String
+     * @return List of {@link org.bankTransaction.pojo.User} from the given endpoint
+     */
+    protected List<User> getAllUsers(String endpoint) {
         RestAssured.baseURI = endpoint;
         RequestSpecification httpRequest = given();
         Response response = httpRequest.get("");
@@ -35,7 +40,59 @@ public class BaseTest {
         return allUsers;
     }
 
-    public boolean deleteAllUsers(String endpoint) {
+    /**
+     * Allows performing a DELETE request for a certain {@link org.bankTransaction.pojo.User} in the given endpoint.
+     * @param endpoint String
+     * @param user {@link org.bankTransaction.pojo.User}
+     * @return Http Response Code for the DELETE request
+     */
+    protected int deleteUser(String endpoint, User user) {
+        Response response = given()
+                .contentType("application/json")
+                .when()
+                .delete(endpoint + "/" + user.getId());
+
+        return response.getStatusCode();
+    }
+
+    /**
+     * Allows performing a POST request for a certain {@link org.bankTransaction.pojo.User} in the given endpoint.
+     * @param endpoint String
+     * @param user {@link org.bankTransaction.pojo.User}
+     * @return Http Response Code for the POST request
+     */
+    protected int createUser(String endpoint, User user) {
+        Response response = given()
+                .contentType("application/json")
+                .body(user)
+                .when()
+                .post(endpoint);
+
+        return response.getStatusCode();
+    }
+
+    /**
+     * Allows performing a PUT request for a certain {@link org.bankTransaction.pojo.User} in the given endpoint.
+     * @param endpoint String
+     * @param user {@link org.bankTransaction.pojo.User}
+     * @return Http Response Code for the PUT request
+     */
+    protected int updateUser(String endpoint, User user) {
+        Response response = given()
+                .contentType("application/json")
+                .body(user)
+                .when()
+                .put(endpoint + "/" + user.getId());
+
+        return response.getStatusCode();
+    }
+
+    /**
+     * Allows to delete all {@link org.bankTransaction.pojo.User} in a given endpoint.
+     * @param endpoint String
+     * @return true if all DELETE request were successful (Http Response Code: 200), otherwise false
+     */
+    protected boolean deleteAllUsers(String endpoint) {
         List<Boolean> deletedUserStatus = new ArrayList<>();
         List<Integer> status = new ArrayList<>();
         List<User> users = getAllUsers(endpoint);
@@ -51,19 +108,23 @@ public class BaseTest {
         return !deletedUserStatus.contains(false);
     }
 
-    public boolean createUsers(String endpoint) {
+    /**
+     * Allow to create a certain amount of {@link org.bankTransaction.pojo.User} by using random data.
+     * @param usersAmount int
+     * @return List of created {@link org.bankTransaction.pojo.User}
+     */
+    protected List<User> createRandomUsers(int usersAmount) {
         List<User> users = new ArrayList<>();
-        List<Boolean> createdUserStatus = new ArrayList<>();
 
         Faker javaFaker = Faker.instance(new Locale("en-US"));
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < usersAmount; i++) {
             users.add(new User(
                     javaFaker.name().firstName(),
                     javaFaker.name().lastName(),
                     javaFaker.number().numberBetween(0,10000),
-                    javaFaker.number().numberBetween(100000, 100000000),
-                    getTransaction(),
+                    javaFaker.number().randomDouble(2, 100000, 100000000),
+                    javaFaker.options().option("withdrawal","payment","invoice","deposit"),
                     javaFaker.internet().emailAddress(),
                     javaFaker.random().nextBoolean(),
                     javaFaker.country().name(),
@@ -72,14 +133,27 @@ public class BaseTest {
         }
 
         String duplicateEmail = javaFaker.internet().emailAddress();
+        users.get(0).setEmail(duplicateEmail);
+        users.get(usersAmount - 1).setEmail(duplicateEmail);
 
-        users.get(3).setEmail(duplicateEmail);
-        users.get(8).setEmail(duplicateEmail);
+        return users;
+    }
+
+    /**
+     * Allows to add a certain amount of random {@link org.bankTransaction.pojo.User} to a given endpoint.
+     * @param endpoint String
+     * @param usersAmount int
+     * @return true if all POST request were successful (Http Response Code: 200), otherwise false
+     */
+    protected boolean createUsers(String endpoint, int usersAmount) {
+        List<User> users = createRandomUsers(usersAmount);
+        List<Boolean> createdUserStatus = new ArrayList<>();
 
         for (int i = 0; i < users.size(); i++) {
             boolean existingEmail = false;
             for (int j = 0; j < users.size() && !existingEmail; j++) {
                 if (users.get(i).getEmail().equals(users.get(j).getEmail()) && i < j) {
+                    Reporter.info("The email " + users.get(j).getEmail() + " is duplicate. User won't be created");
                     existingEmail = true;
                 }
             }
@@ -91,13 +165,12 @@ public class BaseTest {
         return !createdUserStatus.contains(false);
     }
 
-    public String getTransaction() {
-        List<String> transactions = Arrays.asList("withdrawal", "deposit", "payment", "invoice");
-        Random random = new Random();
-        return transactions.get(random.nextInt(transactions.size()));
-    }
-
-    public boolean verifyDuplicates(String endpoint) {
+    /**
+     * Allows to verify is there are duplicate emails in a given endpoint.
+     * @param endpoint String
+     * @return true if there are no duplicate emails, otherwise false
+     */
+    protected boolean verifyDuplicates(String endpoint) {
         List<String> userEmails = new ArrayList<>();
         getAllUsers(endpoint).forEach(user -> {
             userEmails.add(user.getEmail());
@@ -108,63 +181,27 @@ public class BaseTest {
         return userSet.size() == getAllUsers(endpoint).size();
     }
 
-    public int updateUser(String endpoint, int userId) {
+    /**
+     * Allows to update the information for a certain {@link org.bankTransaction.pojo.User} in a given endpoint.
+     * @param endpoint String
+     * @param userId int
+     * @return Http Response Code of the PUT request
+     */
+    protected int updateUser(String endpoint, int userId) {
         User user = getAllUsers(endpoint).get(userId - 1);
 
-        user.setName("Rhiannon");
-        user.setLastName("Weber");
-        user.setAccountNumber(55181079);
-        user.setAmount(850000);
-        user.setTransactionType("deposit");
-        user.setEmail("mathew_Ferry68@yahoo.com");
-        user.setActive(true);
-        user.setCountry("Cyprus");
-        user.setTelephone("1-872-825-1820");
+        Faker javaFaker = Faker.instance(new Locale("en-US"));
+
+        user.setName(javaFaker.name().firstName());
+        user.setLastName(javaFaker.name().lastName());
+        user.setAccountNumber(javaFaker.number().numberBetween(0,10000));
+        user.setAmount(javaFaker.number().randomDouble(2, 100000, 100000000));
+        user.setTransactionType(javaFaker.options().option("withdrawal","payment","invoice","deposit"));
+        user.setEmail(javaFaker.internet().emailAddress());
+        user.setActive(javaFaker.random().nextBoolean());
+        user.setCountry(javaFaker.country().name());
+        user.setTelephone(javaFaker.phoneNumber().cellPhone());
 
         return updateUser(endpoint,user);
-    }
-
-    public int deleteUser(String endpoint, User user) {
-        Response response = given()
-                .contentType("application/json")
-                .when()
-                .delete(endpoint + "/" + user.getId());
-
-        return response.getStatusCode();
-    }
-
-    public int createUser(String endpoint, User user) {
-        Response response = given()
-                .contentType("application/json")
-                .body(user)
-                .when()
-                .post(endpoint);
-
-        return response.getStatusCode();
-    }
-
-    public int updateUser(String endpoint, User user) {
-        Response response = given()
-                .contentType("application/json")
-                .body(user)
-                .when()
-                .put(endpoint + "/" + user.getId());
-
-        return response.getStatusCode();
-    }
-
-    /**
-     * Allows to print a message from a set template for assertions handling.
-     * @param description <em>String</em> describing which assertion is being performed
-     * @param actualValue Value obedient as the test result
-     * @param expectedValue Value expected to the test result
-     */
-    protected <T> void checkThat(String description, T actualValue, Matcher<? super T> expectedValue) {
-        Reporter.info(format("Checking that " + description.toLowerCase() + "[Expectation: %s]", expectedValue));
-        try {
-            MatcherAssert.assertThat(actualValue, expectedValue);
-        } catch (AssertionError e) {
-            Reporter.error(format("Assertion Error: [%s]", e.getMessage().replaceAll("\n", "")));
-        }
     }
 }

@@ -9,27 +9,34 @@ import org.testng.ITestResult;
  * Class for printing messages either, when a test passes or fails.
  */
 public class Listener implements ITestListener {
-    @Override
-    public void onTestStart(ITestResult iTestResult) {
 
+    /**
+     * Print a message when a test starts.
+     * @param result Current test
+     */
+    @Override
+    public void onTestStart(ITestResult result) {
+        Reporter.info("Starting test: " + result.getName());
     }
 
     /**
      * Print a message when a test passes.
-     * @param result Test result
+     * @param result Current test
      */
     @Override
     public void onTestSuccess(ITestResult result) {
         Reporter.info("Test: " + result.getName() + " [PASSED]");
+        System.out.println();
     }
 
     /**
      * Print a message when a test fails.
-     * @param result Test result
+     * @param result Current test
      */
     @Override
     public void onTestFailure(ITestResult result) {
         Reporter.error("Test: " + result.getName() + " [FAILED]");
+        System.out.println();
     }
 
     @Override
