@@ -44,6 +44,11 @@ public class BaseTest {
         return allUsers;
     }
 
+    /**
+     * Allows to get the Http Response code after getting the {@link org.bankTransaction.pojo.User} from the endpoint
+     * @param endpoint String
+     * @return Http Response Code for the GET request
+     */
     protected int getAllUsersStatus(String endpoint) {
         getAllUsers(endpoint);
         return getUsersStatus;
