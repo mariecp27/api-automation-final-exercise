@@ -158,7 +158,7 @@ public class BaseTest {
                 }
             }
             if (!existingEmail) {
-                createdUserStatus.add(createUser(endpoint, users.get(i)) != 200);
+                createdUserStatus.add(createUser(endpoint, users.get(i)) == 201);
             }
         }
 
